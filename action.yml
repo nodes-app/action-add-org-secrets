@@ -1,15 +1,33 @@
-name: Hello
-description: Say hello
+name: Add Organization Secrets
+description: Grant a repository access to organization secrets
 branding:
-  icon: activity
+  icon: lock
   color: blue
 inputs:
-  foo:
-    description: Foo
+  repository:
+    description: Repository (e.g. nodes-app/example)
+    required: true
+  secrets:
+    description: List of secrets to grant access to
+    required: true
+  token:
+    description: Personal Access Token
     required: true
 runs:
   using: composite
   steps:
     - shell: bash
+      env:
+        REPOSITORY: ${{ inputs.repository }}
+        SECRETS: ${{ inputs.secrets }}
+        GITHUB_TOKEN: ${{ inputs.token }}
       run: |
-        echo 'Hello, World!'
+        organization=$(dirname "$REPOSITORY")
+        repository_id=$(gh api -H "Accept: application/vnd.github.v3+json" /repos/nodes-app/test | jq -r '.id')
+
+        for secret in $SECRETS; do
+          gh api \
+            --method PUT \
+            -H "Accept: application/vnd.github.v3+json" \
+            "/orgs/$organization/actions/secrets/$secret/repositories/$repository_id"
+        done

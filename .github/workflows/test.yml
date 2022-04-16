@@ -10,4 +10,7 @@ jobs:
       - name: Test Action
         uses: ./
         with:
-          foo: bar
+          repository: nodes-app/action-add-org-secrets
+          secrets: |
+            EXAMPLE_SECRET
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
